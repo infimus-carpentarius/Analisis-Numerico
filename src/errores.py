@@ -5,6 +5,7 @@ Incluye funciones para mostrar límites de la máquina y resolver los ejercicios
 
 import sys
 import math
+from numbers import Number
 
 def mostrar_limites_maquina():
     """Imprime información sobre los límites de precisión de float en esta máquina."""
@@ -17,15 +18,29 @@ def mostrar_limites_maquina():
     print(f"Tolerancia relativa por defecto de pytest: 1e-6")
     print(f"Tolerancia absoluta por defecto de pytest: 1e-12\n")
 
-def error_absoluto(valor_real: float, valor_aprox: float) -> float:
-    """Retorna el error absoluto |real - aprox|."""
-    return abs(valor_real - valor_aprox)
+def error_absoluto(real: float, aprox: float) -> float:
+    """
+    Retorna el error absoluto |real - aprox|.
+    Valida que ambos argumentos sean números (no None, no NaN).
+    """
+    if not isinstance(real, Number) or not isinstance(aprox, Number):
+        raise TypeError("Ambos argumentos deben ser números.")
+    if math.isnan(real) or math.isnan(aprox):
+        raise ValueError("No se puede calcular error con NaN.")
+    return abs(real - aprox)
 
-def error_relativo(valor_real: float, valor_aprox: float) -> float:
-    """Retorna el error relativo |real - aprox| / |real|, suponiendo real != 0."""
-    if valor_real == 0.0:
-        raise ValueError("El valor real no puede ser cero para el error relativo.")
-    return abs(valor_real - valor_aprox) / abs(valor_real)
+def error_relativo(real: float, aprox: float) -> float:
+    """
+    Retorna el error relativo |real - aprox| / |real|, suponiendo real != 0.
+    Valida tipos y que real no sea cero.
+    """
+    if not isinstance(real, Number) or not isinstance(aprox, Number):
+        raise TypeError("Ambos argumentos deben ser números.")
+    if math.isnan(real) or math.isnan(aprox):
+        raise ValueError("No se puede calcular error con NaN.")
+    if real == 0:
+        raise ValueError("El valor real no puede ser cero para error relativo.")
+    return abs(real - aprox) / abs(real)
 
 def mostrar_ejercicio1():
     """Calcula errores para el ejercicio 1 de la sección 1.2."""
