@@ -1,8 +1,21 @@
 """
 Cálculo de errores absoluto y relativo para aproximaciones numéricas.
+Incluye funciones para mostrar límites de la máquina y resolver los ejercicios 1 y 2 de la sección 1.2.
 """
 
+import sys
 import math
+
+def mostrar_limites_maquina():
+    """Imprime información sobre los límites de precisión de float en esta máquina."""
+    print("\n=== Límites de la máquina (float de Python) ===")
+    print(f"Épsilon (máquina)      : {sys.float_info.epsilon:.5e}")
+    print(f"Máximo valor           : {sys.float_info.max:.5e}")
+    print(f"Mínimo positivo normal : {sys.float_info.min:.5e}")
+    prec = -math.log10(sys.float_info.epsilon)
+    print(f"Dígitos decimales de precisión (aprox): {int(prec)}")
+    print(f"Tolerancia relativa por defecto de pytest: 1e-6")
+    print(f"Tolerancia absoluta por defecto de pytest: 1e-12\n")
 
 def error_absoluto(valor_real: float, valor_aprox: float) -> float:
     """Retorna el error absoluto |real - aprox|."""
@@ -64,5 +77,6 @@ def mostrar_ejercicio2():
         print(f"  Error relativo = {rel_err:.2e}\n")
 
 if __name__ == "__main__":
+    mostrar_limites_maquina()
     mostrar_ejercicio1()
     mostrar_ejercicio2()
