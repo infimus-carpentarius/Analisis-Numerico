@@ -5,6 +5,7 @@ Soporta corte y redondeo.
 """
 
 import math
+import struct
 
 def normalizar(valor: float, digits: int):
     """
@@ -118,3 +119,39 @@ def ieee754_binary_to_float(binary_str: str) -> float:
         mantissa = 1.0 + fraction
         value = mantissa * (2.0 ** (exp - 1023))
         return -value if sign else value
+    
+
+
+def float_to_ieee754_binary(f: float) -> str:
+    """
+    Convierte un número float (doble precisión) a su representación binaria de 64 bits.
+    """
+    # Empaquetar el float como 8 bytes en orden little-endian (nativo)
+    # Usar '>d' para big-endian (estándar de red) pero cuidado con el orden.
+    # El estándar IEEE 754 define el bit más significativo primero, pero en memoria puede variar.
+    # Usamos `struct.pack('>d', f)` para big-endian, que es el orden de bits usual en representación.
+    # Luego convertimos cada byte a binario.
+    try:
+        packed = struct.pack('>d', f)
+    except OverflowError:
+        # Manejar inf o nan
+        if math.isinf(f):
+            if f > 0:
+                return "0" + "11111111111" + "0" * 52
+            else:
+                return "1" + "11111111111" + "0" * 52
+        elif math.isnan(f):
+            # Cualquier NaN: signo 0, exponente 2047, fracción != 0
+            return "0" + "11111111111" + "1" + "0" * 51
+        else:
+            raise
+    bits = ''.join(f'{byte:08b}' for byte in packed)
+    return bits
+
+def next_float(f: float) -> float:
+    """Siguiente número de máquina mayor que f."""
+    return math.nextafter(f, math.inf)
+
+def prev_float(f: float) -> float:
+    """Número de máquina inmediatamente menor que f."""
+    return math.nextafter(f, -math.inf)
