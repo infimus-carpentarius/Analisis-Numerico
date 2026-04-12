@@ -388,3 +388,77 @@ def posicion_falsa(f, a, b, tol_abs=1e-8, rel_tol=None, max_iter=100, verbose=Fa
             fa = fp
     
     raise RuntimeError(f"No converge en {max_iter} iteraciones. Último intervalo [{a:.6f}, {b:.6f}]")
+
+from src.utilities import evaluar_seguro
+
+# src/root_finding.py
+
+from src.utilities import evaluar_seguro
+
+def newton_modificado(f, df, ddf, x0, tol_abs=1e-8, rel_tol=None, max_iter=100, eps=1e-15, verbose=False):
+    """
+    Método de Newton modificado para raíces múltiples.
+    
+    Parámetros
+    ----------
+    f : callable
+        Función objetivo.
+    df : callable
+        Primera derivada.
+    ddf : callable
+        Segunda derivada.
+    x0 : float
+        Aproximación inicial.
+    tol_abs : float
+        Tolerancia absoluta para |x_{n+1} - x_n|.
+    rel_tol : float or None
+        Tolerancia relativa |x_{n+1} - x_n| / |x_{n+1}|.
+    max_iter : int
+        Número máximo de iteraciones.
+    eps : float
+        Umbral para considerar |f(p)| ≈ 0.
+    verbose : bool
+        Si es True, imprime cada iteración.
+    
+    Retorna
+    -------
+    p : float
+        Aproximación a la raíz.
+    historial : list of tuples (iter, x, f(x))
+    razon_parada : str
+    """
+    x = float(x0)
+    fx = evaluar_seguro(f, x, "inicial")
+    historial = [(0, x, fx)]
+    
+    if abs(fx) < eps:
+        return x, historial, "f(x0) ≈ 0"
+    
+    for i in range(1, max_iter+1):
+        fpx = evaluar_seguro(df, x, f"derivada {i}")
+        fppx = evaluar_seguro(ddf, x, f"segunda derivada {i}")
+        
+        denominador = fpx*fpx - fx*fppx
+        if abs(denominador) < 1e-15:
+            raise ValueError(f"Denominador nulo en x={x}. Posible raíz exacta o mal condicionamiento.")
+        
+        x_next = x - fx*fpx / denominador
+        fx_next = evaluar_seguro(f, x_next, f"iter {i}")
+        historial.append((i, x_next, fx_next))
+        
+        if verbose:
+            print(f"Iter {i:3d}: x={x:.10f}, f(x)={fx:.2e}, x_next={x_next:.10f}")
+        
+        error_abs = abs(x_next - x)
+        if error_abs < tol_abs:
+            return x_next, historial, f"Error absoluto {error_abs:.2e} < {tol_abs:.2e}"
+        if rel_tol is not None and x_next != 0:
+            error_rel = error_abs / abs(x_next)
+            if error_rel < rel_tol:
+                return x_next, historial, f"Error relativo {error_rel:.2e} < {rel_tol:.2e}"
+        if abs(fx_next) < eps:
+            return x_next, historial, "|f(p)| ≈ 0"
+        
+        x, fx = x_next, fx_next
+    
+    raise RuntimeError(f"No converge en {max_iter} iteraciones. Último x = {x:.6f}")
