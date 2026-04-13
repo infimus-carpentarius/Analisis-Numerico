@@ -462,3 +462,88 @@ def newton_modificado(f, df, ddf, x0, tol_abs=1e-8, rel_tol=None, max_iter=100, 
         x, fx = x_next, fx_next
     
     raise RuntimeError(f"No converge en {max_iter} iteraciones. Último x = {x:.6f}")
+
+# ============================================================================
+# Método Δ² de Aitken y método de Steffensen
+# ============================================================================
+
+def aitken(p0, p1, p2):
+    """
+    Aplica un paso del método Δ² de Aitken a tres términos consecutivos.
+
+    Parámetros
+    ----------
+    p0, p1, p2 : float
+        Tres términos consecutivos de una sucesión (p_n, p_{n+1}, p_{n+2}).
+
+    Retorna
+    -------
+    p_hat : float
+        Estimación acelerada del límite.
+    """
+    numerador = (p1 - p0) ** 2
+    denominador = p2 - 2*p1 + p0
+    if abs(denominador) < 1e-15:
+        return p2   # fallback seguro
+    return p0 - numerador / denominador
+
+
+def steffensen(g, p0, tol_abs=1e-8, rel_tol=None, max_iter=100, verbose=False):
+    """
+    Método de Steffensen para encontrar un punto fijo de g.
+
+    Parámetros
+    ----------
+    g : callable
+        Función de iteración (debe cumplir g(p)=p en la raíz).
+    p0 : float
+        Aproximación inicial.
+    tol_abs : float
+        Tolerancia absoluta para |p_{n+1} - p_n|.
+    rel_tol : float or None
+        Tolerancia relativa |p_{n+1} - p_n| / |p_{n+1}|.
+    max_iter : int
+        Número máximo de iteraciones.
+    verbose : bool
+        Si es True, imprime cada iteración.
+
+    Retorna
+    -------
+    p : float
+        Aproximación al punto fijo.
+    historial : list of tuples
+        (iteración, p_actual, g(p_actual))
+    razon_parada : str
+        Descripción de la causa de terminación.
+    """
+    from src.utilities import evaluar_seguro
+
+    #Prueba si el punto p0 es ya un punto fijo y no es necesaria ninguna operacion
+    gp0 = evaluar_seguro(g, p0, "inicial")
+    if abs(gp0 - p0) < 1e-15:
+        return p0, [(0, p0, gp0)], "p0 es punto fijo"
+
+
+    p = p0
+    historial = [(0, p, evaluar_seguro(g, p, "inicial"))]
+
+    for i in range(1, max_iter + 1):
+        p1 = evaluar_seguro(g, p, f"iter {i}.1")
+        p2 = evaluar_seguro(g, p1, f"iter {i}.2")
+        p_new = aitken(p, p1, p2)
+
+        historial.append((i, p_new, evaluar_seguro(g, p_new, f"iter {i}.final")))
+        if verbose:
+            print(f"Iter {i:3d}: p0={p:.10f}, p1={p1:.10f}, p2={p2:.10f}, p_new={p_new:.10f}")
+
+        error_abs = abs(p_new - p)
+        if error_abs < tol_abs:
+            return p_new, historial, f"Error absoluto {error_abs:.2e} < {tol_abs:.2e}"
+        if rel_tol is not None and p_new != 0:
+            error_rel = error_abs / abs(p_new)
+            if error_rel < rel_tol:
+                return p_new, historial, f"Error relativo {error_rel:.2e} < {rel_tol:.2e}"
+
+        p = p_new
+
+    raise RuntimeError(f"No converge en {max_iter} iteraciones. Último p = {p:.6f}")
