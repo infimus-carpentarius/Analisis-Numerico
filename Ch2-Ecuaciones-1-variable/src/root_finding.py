@@ -547,3 +547,411 @@ def steffensen(g, p0, tol_abs=1e-8, rel_tol=None, max_iter=100, verbose=False):
         p = p_new
 
     raise RuntimeError(f"No converge en {max_iter} iteraciones. Último p = {p:.6f}")
+
+from src.utilities import es_numero_real_valido
+
+def horner_coeficientes_reales(coefs, x, derivada_orden=0):
+    """
+    Evalúa un polinomio con coeficientes reales en uno o varios puntos usando el método de Horner,
+    y opcionalmente calcula las derivadas hasta un orden dado.
+    
+    Parámetros
+    ----------
+    coefs : list of numeric
+        Coeficientes desde el de mayor grado hasta el independiente.
+    x : numeric or list of numeric
+        Punto o lista de puntos donde evaluar.
+    derivada_orden : int, optional
+        Orden máximo de derivada a calcular. Debe ser un entero no negativo.
+        0: solo valor, 1: valor y primera derivada, etc. Por defecto 0.
+    
+    Retorna
+    -------
+    Si x es un número:
+        tuple (p, dp, ddp, ...) de longitud derivada_orden+1.
+    Si x es una lista:
+        list of tuples, cada tuple con los valores para ese punto.
+    
+    Lanza
+    -----
+    TypeError
+        Si derivada_orden no es un entero.
+    ValueError
+        Si coefs está vacío, derivada_orden < 0, o algún coeficiente no es convertible a float.
+    OverflowError
+        Si ocurre desbordamiento durante las operaciones.
+    """
+    if not coefs:
+        raise ValueError("La lista de coeficientes no puede estar vacía")
+    
+    # Validación estricta: derivada_orden debe ser entero (no bool, no float)
+    if type(derivada_orden) is not int:
+        raise TypeError(f"derivada_orden debe ser un número entero, no {type(derivada_orden).__name__}")
+    
+    if derivada_orden < 0:
+        raise ValueError("derivada_orden debe ser >= 0")
+    
+    # Convertir coeficientes a float validando que sean reales
+    try:
+        coefs_f = []
+        for c in coefs:
+            if not es_numero_real_valido(c):
+                raise ValueError(f"Coeficiente no real: {c}")
+            coefs_f.append(float(c))
+    except Exception as e:
+        raise ValueError(f"Error al convertir coeficientes: {e}")
+    
+    n = len(coefs_f) - 1  # grado
+    
+    def evaluar_en_punto(x0):
+        try:
+            xf = float(x0)
+            if not es_numero_real_valido(xf):
+                raise ValueError(f"x no es un número real: {x0}")
+        except Exception as e:
+            raise ValueError(f"Error al convertir x: {e}")
+        
+        # Función auxiliar: Horner con cociente
+        def horner_con_cociente(coefs, x):
+            b = coefs[0]
+            cociente = [b]
+            for i in range(1, len(coefs)):
+                b = b * x + coefs[i]
+                if i < len(coefs)-1:
+                    cociente.append(b)
+            return b, cociente
+        
+        resultados = []
+        coefs_actual = coefs_f[:]
+        for orden in range(derivada_orden + 1):
+            if orden > n:
+                resultados.append(0.0)
+                continue
+            try:
+                val, cociente = horner_con_cociente(coefs_actual, xf)
+                resultados.append(val)
+                coefs_actual = cociente
+            except OverflowError:
+                raise OverflowError(f"Desbordamiento al evaluar derivada orden {orden} en x={xf}")
+        
+        # Ajustar factoriales para órdenes >=2
+        factorial = 1
+        for k in range(2, derivada_orden + 1):
+            factorial *= k
+            resultados[k] *= factorial
+        
+        return tuple(resultados)
+    
+    # Si x es un solo número, devolver tupla
+    if isinstance(x, (int, float)):
+        return evaluar_en_punto(x)
+    # Si es iterable (lista, tupla, etc.), devolver lista de tuplas
+    try:
+        iter(x)
+    except TypeError:
+        return evaluar_en_punto(x)
+    else:
+        return [evaluar_en_punto(xi) for xi in x]
+    
+import cmath
+import math
+from typing import List, Union, Tuple
+
+def horner_coeficientes_complejos(
+    coefs: List[Union[complex, float, int]],
+    x: Union[complex, float, int],
+    derivada_orden: int = 0
+) -> Union[complex, Tuple[complex, ...]]:
+    """
+    Evalúa un polinomio con coeficientes complejos (o reales) en un punto complejo x
+    usando el método de Horner. Opcionalmente calcula las derivadas hasta un orden dado.
+
+    Parámetros
+    ----------
+    coefs : list
+        Coeficientes del polinomio desde el de mayor grado hasta el independiente.
+        Pueden ser números complejos, reales o enteros.
+    x : complex, float, int
+        Punto de evaluación.
+    derivada_orden : int, optional
+        Orden máximo de derivada a calcular (0 = solo valor, 1 = valor y primera derivada, etc.).
+        Por defecto 0.
+
+    Retorna
+    -------
+    Si derivada_orden == 0:
+        complex : valor del polinomio en x.
+    Si derivada_orden > 0:
+        tuple : (P(x), P'(x), P''(x), ..., P^{(derivada_orden)}(x))
+
+    Lanza
+    -----
+    ValueError
+        Si la lista de coeficientes está vacía, o derivada_orden es negativo.
+    TypeError
+        Si algún coeficiente no es convertible a complex, o x no es convertible.
+    RuntimeError
+        Si ocurre overflow o se detectan valores inf/nan durante la evaluación.
+    """
+    if not coefs:
+        raise ValueError("La lista de coeficientes no puede estar vacía")
+    if derivada_orden < 0:
+        raise ValueError("derivada_orden debe ser >= 0")
+
+    # Convertir todos los coeficientes a complex
+    try:
+        coefs_c = [complex(c) for c in coefs]
+    except Exception as e:
+        raise TypeError(f"Error al convertir coeficientes a complex: {e}")
+
+    # Eliminar ceros a la izquierda (coeficiente principal no nulo)
+    while len(coefs_c) > 1 and abs(coefs_c[0]) == 0.0:
+        coefs_c.pop(0)
+    if len(coefs_c) == 1 and coefs_c[0] == 0:
+        raise ValueError("El polinomio es idénticamente cero (todos los coeficientes nulos)")
+
+    # Convertir x a complex
+    try:
+        xc = complex(x)
+    except Exception as e:
+        raise TypeError(f"Error al convertir x a complex: {e}")
+
+    # Detectar posibles overflow/inf/nan en x
+    if math.isinf(xc.real) or math.isinf(xc.imag) or math.isnan(xc.real) or math.isnan(xc.imag):
+        raise RuntimeError(f"x contiene valor infinito o NaN: {xc}")
+
+    n = len(coefs_c) - 1  # grado
+
+    # Función auxiliar para evaluar polinomio y cociente (sin factorial)
+    def horner_con_cociente(c: List[complex], x: complex) -> Tuple[complex, List[complex]]:
+        b = c[0]
+        cociente = [b]
+        for i in range(1, len(c)):
+            b = b * x + c[i]
+            if i < len(c) - 1:
+                cociente.append(b)
+        return b, cociente
+
+    resultados = []
+    coefs_actual = coefs_c[:]
+
+    for orden in range(derivada_orden + 1):
+        if orden > n:
+            resultados.append(0.0 + 0.0j)
+            continue
+        try:
+            val, cociente = horner_con_cociente(coefs_actual, xc)
+        except (OverflowError, ZeroDivisionError) as e:
+            raise RuntimeError(f"Overflow o división por cero en derivada orden {orden}: {e}")
+        # Verificar si val contiene inf o nan
+        if math.isinf(val.real) or math.isinf(val.imag) or math.isnan(val.real) or math.isnan(val.imag):
+            raise RuntimeError(f"Desbordamiento: valor {val} en derivada orden {orden}")
+        resultados.append(val)
+        coefs_actual = cociente  # preparar para siguiente derivada
+
+    # Ajustar factoriales para órdenes >= 2
+    factorial = 1
+    for k in range(2, derivada_orden + 1):
+        factorial *= k
+        resultados[k] *= factorial
+
+    if derivada_orden == 0:
+        return resultados[0]
+    else:
+        return tuple(resultados)
+    
+import cmath
+import math
+from typing import List, Union, Tuple
+
+# Excepciones específicas
+class ConvergenceError(RuntimeError):
+    """Excepción para fallos de convergencia."""
+    pass
+
+class IllConditionedError(RuntimeError):
+    """Excepción para problemas de mal condicionamiento numérico."""
+    pass
+
+def muller_polinomio(
+    coefs: List[Union[complex, float, int]],
+    p0: float,
+    p1: float,
+    p2: float,
+    tol_abs: float = 1e-8,
+    tol_rel: float = 1e-8,
+    tol_f: float = 1e-12,
+    max_iter: int = 100,
+    verbose: bool = False
+) -> Tuple[Union[float, complex], int, str]:
+    """
+    Método de Müller para encontrar una raíz de un polinomio.
+
+    Parámetros
+    ----------
+    coefs : list
+        Coeficientes del polinomio (de mayor a menor grado). Pueden ser reales o complejos.
+    p0, p1, p2 : float
+        Tres aproximaciones iniciales reales y distintas.
+    tol_abs : float
+        Tolerancia absoluta para |dx| (defecto 1e-8).
+    tol_rel : float
+        Tolerancia relativa para |dx|/|p_new| (defecto 1e-8).
+    tol_f : float
+        Tolerancia para el residuo |f(p_new)| (defecto 1e-12).
+    max_iter : int
+        Número máximo de iteraciones (defecto 100).
+    verbose : bool
+        Si es True, imprime cada iteración.
+
+    Retorna
+    -------
+    raiz : float or complex
+        Aproximación a la raíz (se convierte a float si la parte imaginaria < 1e-12).
+    iteraciones : int
+        Número de iteraciones realizadas.
+    razon : str
+        Causa de parada.
+
+    Lanza
+    -----
+    ValueError
+        Si los coeficientes son inválidos, los puntos iniciales no son reales o no son distintos.
+    ConvergenceError
+        Si el método no converge en max_iter iteraciones o se estanca.
+    IllConditionedError
+        Si el polinomio está mal condicionado (puntos demasiado cercanos, función casi constante).
+    RuntimeError
+        Para otros errores aritméticos (overflow, etc.).
+    """
+    # Validaciones básicas
+    if not coefs:
+        raise ValueError("La lista de coeficientes no puede estar vacía.")
+    if len(coefs) < 2:
+        raise ValueError("El polinomio debe tener al menos grado 1.")
+
+    # Limpiar coeficientes (eliminar ceros a la izquierda)
+    coefs_c = [complex(c) for c in coefs]
+    while len(coefs_c) > 1 and abs(coefs_c[0]) == 0.0:
+        coefs_c.pop(0)
+    if len(coefs_c) == 1:
+        if coefs_c[0] == 0.0:
+            raise ValueError("El polinomio es idénticamente cero.")
+        else:
+            raise IllConditionedError("El polinomio es constante no nulo. No tiene raíces.")
+
+    # Normalización de coeficientes
+    if abs(coefs_c[0]) > 1e10:
+        factor = coefs_c[0]
+        coefs_c = [c / factor for c in coefs_c]
+        if verbose:
+            print("Coeficientes normalizados (divididos por el principal).")
+
+    # Validación de puntos iniciales reales y distintos
+    for p in (p0, p1, p2):
+        if isinstance(p, complex) and p.imag != 0:
+            raise ValueError(f"El punto inicial {p} debe ser real.")
+    p0, p1, p2 = float(p0), float(p1), float(p2)
+    if len({p0, p1, p2}) < 3:
+        raise ValueError("Los tres puntos iniciales deben ser distintos.")
+
+    # Ordenar puntos (mejora estabilidad)
+    p0, p1, p2 = sorted([p0, p1, p2])
+    x0, x1, x2 = complex(p0, 0), complex(p1, 0), complex(p2, 0)
+    x_new = x2  # inicialización para evitar UnboundLocalError
+
+    # Evaluación inicial
+    try:
+        f0 = horner_coeficientes_complejos(coefs_c, x0)
+        f1 = horner_coeficientes_complejos(coefs_c, x1)
+        f2 = horner_coeficientes_complejos(coefs_c, x2)
+    except Exception as e:
+        raise RuntimeError(f"Error en evaluación inicial: {e}")
+
+    # Verificar degeneración
+    if abs(f0 - f1) < 1e-12 and abs(f1 - f2) < 1e-12:
+        raise IllConditionedError(
+            "La función es prácticamente constante en los puntos iniciales."
+        )
+
+    prev_error = None
+    estancamiento = 0
+
+    for i in range(3, max_iter + 1):
+        h0 = x0 - x2
+        h1 = x1 - x2
+        if abs(h0) < 1e-15 or abs(h1) < 1e-15:
+            raise IllConditionedError(
+                f"Puntos demasiado cercanos (h0={h0}, h1={h1})."
+            )
+        # Evitar división por cero en denominador de a
+        if abs(h1 + h0) < 1e-15:
+            # Perturbar ligeramente x0
+            x0 += 1e-12 * (1 + 1j)
+            h0 = x0 - x2
+            h1 = x1 - x2
+
+        d0 = (f0 - f2) / h0
+        d1 = (f1 - f2) / h1
+        a = (d1 - d0) / (h1 + h0)
+        b = a * h1 + d1
+        c = f2
+
+        if abs(a) < 1e-12:
+            # Parábola casi lineal: usar secante
+            if abs(b) < 1e-15:
+                dx = 0.0
+            else:
+                dx = -c / b
+        else:
+            disc = b * b - 4.0 * a * c
+            sqrt_disc = cmath.sqrt(disc)
+            den1 = b + sqrt_disc
+            den2 = b - sqrt_disc
+            den = den1 if abs(den1) >= abs(den2) else den2
+            if abs(den) < 1e-15:
+                dx = 0.0
+            else:
+                dx = -2.0 * c / den
+
+        x_new = x2 + dx
+        try:
+            f_new = horner_coeficientes_complejos(coefs_c, x_new)
+        except Exception as e:
+            raise RuntimeError(f"Error aritmético en iteración {i}: {e}")
+
+        error_abs = abs(dx)
+        error_rel = error_abs / abs(x_new) if abs(x_new) > 1e-15 else 0.0
+        residuo = abs(f_new)
+
+        if verbose:
+            print(f"Iter {i:3d}: x = {x_new}, f(x) = {f_new}, "
+                  f"err_abs={error_abs:.2e}, err_rel={error_rel:.2e}")
+
+        # Criterios de parada
+        if error_abs < tol_abs or error_rel < tol_rel or residuo < tol_f:
+            if abs(x_new.imag) < 1e-12:
+                x_new = x_new.real
+            razon = f"Convergencia alcanzada: error_abs={error_abs:.2e}, error_rel={error_rel:.2e}, residuo={residuo:.2e}"
+            return x_new, i, razon
+
+        # Detección de estancamiento
+        if prev_error is not None:
+            if error_abs >= prev_error * 0.99:
+                estancamiento += 1
+            else:
+                estancamiento = 0
+            if estancamiento >= 5:
+                raise ConvergenceError(
+                    "Estancamiento detectado: el error absoluto no disminuye."
+                )
+        prev_error = error_abs
+
+        # Desplazar puntos
+        x0, x1, x2 = x1, x2, x_new
+        f0, f1, f2 = f1, f2, f_new
+
+    raise ConvergenceError(
+        f"No se alcanzó convergencia en {max_iter} iteraciones. "
+        f"Último valor: x = {x_new}"
+    )
