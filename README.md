@@ -1,12 +1,16 @@
-# Cálculo de errores absoluto y relativo
+# Análisis Numérico con Git, Testing y CI/CD
 
-Este programa resuelve los ejercicios 1 y 2 de la sección 1.2 del libro de Análisis Numérico.
+Este proyecto aplica métodos de análisis numérico (Newton, sistemas lineales, etc.) siguiendo buenas prácticas profesionales: control de versiones con Git, pruebas automatizadas con pytest e integración continua. El objetivo es tener un código reproducible, bien probado y fácil de mantener.
 
 ## Requisitos
-- Python 3.10
+
+- Git
 - Conda (Miniconda o Anaconda)
 
-## Creación del entorno
+## Crear y activar el entorno virtual
+
+El entorno se define en `environment.yml`. Para crearlo:
+
 ```bash
 conda env create -f environment.yml
 conda activate jnotebook
