@@ -31,21 +31,6 @@ En este capítulo se han implementado y probado los principales métodos numéri
   - Tests específicos para cada método y para horner_coeficientes_complejos.
 
 
-## Estructura del proyecto
-
-Ch2-Ecuaciones-1-variable/
-├── src/
-│   ├── root_finding.py      # todos los métodos numéricos
-│   └── utilities.py         # funciones auxiliares
-├── tests/
-│   ├── test_root_finding.py
-│   ├── test_utilities.py
-│   ├── test_steffensen.py
-│   ├── test_muller_polinomio.py
-│   └── test_horner_coeficientes_complejos.py
-├── notebooks/               # cuadernos con ejercicios resueltos
-└── README.md
-
 ## Ejercicios resueltos
 
 Se han resuelto y documentado los siguientes problemas del libro de Burden‑Faires (capítulo 2):
