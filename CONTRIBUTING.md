@@ -29,7 +29,7 @@ Antes de contribuir, asegúrate de tener:
 
 ## 🔄 Flujo de Trabajo
 
-### 1️⃣ Fork y clona el repositorio
+# 1️⃣ Fork y clona el repositorio
 
 # Fork en GitHub (botón "Fork" en la esquina superior derecha)
 
@@ -40,7 +40,7 @@ cd Analisis-Numerico
 # Agrega el repositorio original como "upstream"
 git remote add upstream https://github.com/infimus-carpentarius/Analisis-Numerico.git
 
-### 2️⃣ Crea una rama para tu característica
+## 2️⃣ Crea una rama para tu característica
 
 # Actualiza tu rama principal
 git fetch upstream
@@ -51,18 +51,18 @@ git merge upstream/Principal
 git checkout -b feature/nombre-descriptivo
 
 # Ejemplos de buenos nombres:
-# - feature/interpolacion-lagrange
-# - fix/error-calculo-derivada
-# - docs/mejorar-readme
-# - test/cobertura-modulo-ecuaciones
+ - feature/interpolacion-lagrange
+ - fix/error-calculo-derivada
+ - docs/mejorar-readme
+ - test/cobertura-modulo-ecuaciones
 
-### 3️⃣ Realiza tus cambios
+## 3️⃣ Realiza tus cambios
 
 - Modifica los archivos necesarios.
 - Crea/actualiza tests en la carpeta `tests/`.
 - Actualiza documentación si es necesario.
 
-### 4️⃣ Sincroniza y prepara el commit
+## 4️⃣ Sincroniza y prepara el commit
 
 # Verifica que todo está actualizado
 git fetch upstream
@@ -82,7 +82,7 @@ git diff --cached
 
 Los commits firmados acreditan tu autoría y aumentan la seguridad. Recomendado para contribuyentes.
 
-### Windows (Git Bash o WSL)
+# Windows (Git Bash o WSL)
 
 # 1. Instalar GPG
 # Si usas Chocolatey:
@@ -95,11 +95,11 @@ sudo apt-get install gnupg
 gpg --full-generate-key
 
 # Responde:
-# - Tipo de clave: RSA
-# - Tamaño: 4096
-# - Validez: 2 años o más
-# - Nombre: Tu nombre completo
-# - Email: Tu email de GitHub
+ - Tipo de clave: RSA
+ - Tamaño: 4096
+ - Validez: 2 años o más
+ - Nombre: Tu nombre completo
+ - Email: Tu email de GitHub
 
 # 3. Obtén tu ID de clave
 gpg --list-secret-keys --keyid-format=long
@@ -110,8 +110,8 @@ gpg --armor --export TU_KEY_ID
 ### Mac / Linux
 
 # Instala GPG si hace falta:
-# Mac: brew install gnupg
-# Linux (Debian/Ubuntu): sudo apt-get install gnupg
+ Mac: brew install gnupg
+ Linux (Debian/Ubuntu): sudo apt-get install gnupg
 
 # Genera y exporta la clave como en Windows:
 gpg --full-generate-key
