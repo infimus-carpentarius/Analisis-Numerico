@@ -133,7 +133,7 @@ git config --global commit.gpgSign true
 
 ## ✍️ Convenciones de Código
 
-### Commits semánticos
+# Commits semánticos
 
 Usa este formato:
 
@@ -147,7 +147,7 @@ git commit -m "feat(ecuaciones): agregar método de Newton-Raphson"
 git commit -m "fix(preliminares): corregir cálculo de error relativo"
 git commit -m "docs: actualizar guía de contribución"
 
-### Estilo de código
+# Estilo de código
 
 - Sigue PEP 8 (Python).
 - Usa nombres descriptivos.
@@ -161,7 +161,7 @@ def calcular_error_relativo(valor_aproximado: float, valor_exacto: float) -> flo
         raise ValueError("El valor exacto no puede ser cero")
     return abs(valor_aproximado - valor_exacto) / abs(valor_exacto)
 
-### Tests
+## Tests
 
 - Escribe tests para toda nueva funcionalidad.
 - Usa pytest y pytest.approx para comparaciones numéricas.
@@ -169,17 +169,17 @@ def calcular_error_relativo(valor_aproximado: float, valor_exacto: float) -> flo
 
 ---
 
-## 🔀 Proceso de Pull Request
+# 🔀 Proceso de Pull Request
 
-### Antes de push
+# Antes de push
 
 pytest tests/ -v
 pytest --cov=nombre_modulo tests/
 
-### Push a tu fork
+# Push a tu fork
 git push origin feature/nombre-descriptivo
 
-### Abre un PR
+# Abre un PR
 
 1. En GitHub, crea la PR hacia `infimus-carpentarius/Analisis-Numerico` base `Principal`.
 2. Completa la descripción, indica cómo se probó y añade checklist.
@@ -190,7 +190,7 @@ Elementos sugeridos en la descripción del PR:
 - Cómo se testeó.
 - Checklist: tests pasan, commits firmados, documentación actualizada.
 
-### Después
+# Después
 
 - Responde a comentarios, realiza cambios y vuelve a push.
 - Cuando todo esté aprobado y el CI pase, hacer merge.
