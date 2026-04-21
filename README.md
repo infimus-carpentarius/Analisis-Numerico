@@ -52,5 +52,5 @@ Documentación por módulo
 
 Cada módulo incluye un README.md que describe sus objetivos, los métodos implementados, ejemplos de uso y, en su caso, los ejercicios resueltos. Para el módulo de ecuaciones en una variable, por ejemplo, se listan todos los métodos numéricos (bisección, Newton, secante, Müller, etc.) y se explica cómo ejecutar las pruebas.
 Contribuciones
-
+ 
 Las contribuciones son bienvenidas. Abre un issue o un pull request siguiendo las convenciones del proyecto. Asegúrate de que todas las pruebas pasen localmente antes de enviar los cambios.
