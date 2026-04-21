@@ -1,6 +1,6 @@
 import pytest
 import math
-from src.root_finding import horner_coeficientes_reales
+from ch2_ecuaciones.root_finding import horner_coeficientes_reales
 
 # ------------------------------------------------------------
 # Funciones auxiliares para polinomios de prueba

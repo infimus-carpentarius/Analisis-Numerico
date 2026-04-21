@@ -3,7 +3,7 @@ import cmath
 import math
 from decimal import Decimal
 from fractions import Fraction
-from src.root_finding import horner_coeficientes_complejos
+from ch2_ecuaciones.root_finding import horner_coeficientes_complejos
 
 # ------------------------------------------------------------
 # Funciones auxiliares de comparación

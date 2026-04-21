@@ -1,7 +1,7 @@
 import pytest
 from fractions import Fraction
 from decimal import Decimal
-from src.utilities import (
+from ch2_ecuaciones.utilities import (
     es_numero_real_valido,
     evaluar_seguro,
     signos_opuestos,

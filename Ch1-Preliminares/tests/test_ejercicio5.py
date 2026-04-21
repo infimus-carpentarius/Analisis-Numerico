@@ -1,9 +1,9 @@
 import pytest
 import math
 from decimal import Decimal, getcontext
-from src.aritmetica import truncar, redondear
-from src.errores import error_absoluto, error_relativo
-from src.ejercicio5 import (
+from ch1_preliminares.aritmetica import truncar, redondear
+from ch1_preliminares.errores import error_absoluto, error_relativo
+from ch1_preliminares.ejercicio5 import (
     valor_exacto_a, valor_exacto_b, valor_exacto_c, valor_exacto_d,
     aproximacion_corte_a, aproximacion_corte_b, aproximacion_corte_c, aproximacion_corte_d,
     aproximacion_redondeo_a, aproximacion_redondeo_b, aproximacion_redondeo_c, aproximacion_redondeo_d

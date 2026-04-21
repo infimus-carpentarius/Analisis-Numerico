@@ -1,6 +1,6 @@
 import pytest
 import math
-from src.root_finding import biseccion
+from ch2_ecuaciones.root_finding import biseccion
 
 # ------------------------------------------------------------
 # Pruebas para biseccion

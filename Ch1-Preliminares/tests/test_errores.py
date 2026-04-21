@@ -2,7 +2,7 @@ import sys
 import math
 import pytest
 from decimal import Decimal, getcontext
-from src.errores import error_absoluto, error_relativo, mostrar_limites_maquina
+from ch1_preliminares.errores import error_absoluto, error_relativo, mostrar_limites_maquina
 
 # Aumentamos precisión de Decimal para cálculos manuales
 getcontext().prec = 50

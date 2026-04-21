@@ -1,6 +1,6 @@
 import pytest
 import math
-from src.ejercicio14 import (
+from ch1_preliminares.ejercicio14 import (
     f_exacta, f_redondeo_3_digitos, f_maclaurin_3digits, limite_en_cero
 )
 

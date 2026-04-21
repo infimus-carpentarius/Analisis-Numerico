@@ -1,6 +1,6 @@
 import pytest
 import math
-from src.root_finding import steffensen, aitken
+from ch2_ecuaciones.root_finding import steffensen, aitken
 
 # ------------------------------------------------------------
 # Funciones de prueba

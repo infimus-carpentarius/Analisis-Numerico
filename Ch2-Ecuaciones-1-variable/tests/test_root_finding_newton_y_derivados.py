@@ -1,6 +1,6 @@
 import pytest
 import math
-from src.root_finding import biseccion, newton, secante, posicion_falsa
+from ch2_ecuaciones.root_finding import biseccion, newton, secante, posicion_falsa
 
 # ===================================================================
 # Pruebas para bisección (ya existentes, se mantienen)

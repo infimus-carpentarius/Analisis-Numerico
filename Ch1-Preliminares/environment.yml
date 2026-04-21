@@ -1,0 +1,15 @@
+name: jnotebook
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.13.12
+  - jupyterlab
+  - numpy
+  - matplotlib
+  - pytest
+  - pytest-cov
+  - scipy
+  - pip
+  - pip:
+    - -e .

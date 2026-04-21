@@ -1,5 +1,5 @@
 import pytest
-from src.aritmetica import ieee754_binary_to_float
+from ch1_preliminares.aritmetica import ieee754_binary_to_float
 import math
 
 def test_cero_positivo():

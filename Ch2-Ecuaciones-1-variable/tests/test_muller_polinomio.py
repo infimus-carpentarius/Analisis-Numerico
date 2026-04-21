@@ -1,6 +1,6 @@
 import pytest
 import cmath
-from src.root_finding import muller_polinomio, ConvergenceError, IllConditionedError
+from ch2_ecuaciones.root_finding import muller_polinomio, ConvergenceError, IllConditionedError
 
 # ------------------------------------------------------------
 # Funciones auxiliares
