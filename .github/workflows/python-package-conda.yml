@@ -22,7 +22,7 @@ jobs:
         with:
           auto-update-conda: true
           python-version: '3.13.12'
-          conda-remove-defaults: true
+          
 
       - name: Find and test all chapters
         shell: bash -l {0}
