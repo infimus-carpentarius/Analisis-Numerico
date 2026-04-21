@@ -1,34 +1,56 @@
-name: Python Package using Conda
+name: CI with Conda
 
-on: [push]
+on:
+  push:
+    branches: [ Principal, main ]
+  pull_request:
+    branches: [ Principal, main ]
 
 jobs:
-  build-linux:
+  test-all-chapters:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 5
-
+      fail-fast: false   # permite que otros capítulos sigan ejecutándose aunque uno falle
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.13.12
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.13.12'
-    - name: Add conda to system path
-      run: |
-        # $CONDA is an environment variable pointing to the root of the miniconda directory
-        echo $CONDA/bin >> $GITHUB_PATH
-    - name: Install dependencies
-      run: |
-        conda env update --file environment.yml --name jnotebook
-    - name: Lint with flake8
-      run: |
-        conda install flake8
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
-      run: |
-        conda install pytest
-        pytest -v
+      - uses: actions/checkout@v4
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          python-version: '3.13.12'
+
+      - name: Find and test all chapters
+        shell: bash -l {0}
+        run: |
+          # Busca todas las carpetas con pyproject.toml (ignora la raíz si también tiene)
+          for chapter in $(find . -maxdepth 2 -name "pyproject.toml" -printf "%h\n" | grep -v '^\.$'); do
+            echo "========================================"
+            echo "Testing chapter: $chapter"
+            echo "========================================"
+            cd $chapter
+
+            # Verificar que exista environment.yml
+            if [ ! -f "environment.yml" ]; then
+              echo "⚠️ No environment.yml found in $chapter, skipping Conda env creation"
+            else
+              # Crear entorno Conda desde el archivo del capítulo
+              conda env create -f environment.yml
+              # Activar el entorno (se asume que el nombre es 'jnotebook' o el definido en el yml)
+              conda activate jnotebook
+            fi
+
+            # Instalar el paquete en modo editable (usa pyproject.toml)
+            pip install -e .
+
+            # Ejecutar pruebas
+            pytest tests/ -v --tb=short
+            if [ $? -ne 0 ]; then
+              echo "❌ Tests failed in $chapter"
+              exit 1
+            fi
+
+            # Limpiar (opcional)
+            conda deactivate
+            cd $OLDPWD
+          done
