@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ch3-interpolacion"
+version = "0.1.0"
+description = "Métodos numéricos para ecuaciones en una variable (Capítulo 2)"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [
+    {name = "Perret, Rober Max", email = "roberderojas@hotmail.com"}
+]
+license = {text = "MIT"}
+dependencies = [
+    "numpy>=1.24",
+    "matplotlib>=3.7",
+    "scipy>=1.10",
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/infimus-carpentarius/analisis-numerico"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["ch3_interpolacion*"]
+exclude = ["tests*"]
